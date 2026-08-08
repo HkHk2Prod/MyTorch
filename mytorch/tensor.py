@@ -18,7 +18,7 @@ def _as_tensor(x):
 
 
 class Tensor:
-    __slots__ = {'data', 'grad', 'requires_grad', '_backward', '_children'}
+    __slots__ = {'_backward', '_children', 'data', 'grad', 'requires_grad'}
     __array_ufunc__ = None # This overrides numpy behavior for __add__ 
                            # in a + b where a is numpy array
                            # it will call __radd__ for Tensor
@@ -162,6 +162,9 @@ class Tensor:
         out._backward = _backward
         return out
 
+    def equal(self, other):
+        return bool(xp.array_equal(self.data, _as_tensor(other).data))
+        
     def size(self, dim=None):
         return self.data.shape if dim is None else self.data.shape[dim]
 

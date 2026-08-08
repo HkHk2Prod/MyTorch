@@ -15,11 +15,12 @@ CREATION_OPS = (
     "full_like",
     )
 
-# Tensor methods re-exported as free functions: torch.exp(x) -> x.exp()
+# Tensor methods re-exported as free functions: x.exp() -> torch.exp(x) 
 METHOD_OPS = (
     "exp", 
     "sum", 
     "max", 
-    "transpose"
+    "transpose",
+    "equal"
     )
 

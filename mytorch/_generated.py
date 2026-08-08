@@ -66,4 +66,7 @@ def max(x, *args, **kwargs):
 def transpose(x, *args, **kwargs):
     return _as_tensor(x).transpose(*args, **kwargs)
 
-__all__ = ['zeros', 'ones', 'empty', 'full', 'arange', 'linspace', 'eye', 'zeros_like', 'ones_like', 'full_like', 'exp', 'sum', 'max', 'transpose']
+def equal(x, *args, **kwargs):
+    return _as_tensor(x).equal(*args, **kwargs)
+
+__all__ = ['zeros', 'ones', 'empty', 'full', 'arange', 'linspace', 'eye', 'zeros_like', 'ones_like', 'full_like', 'exp', 'sum', 'max', 'transpose', 'equal']

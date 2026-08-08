@@ -17,6 +17,7 @@ from ._generated import (
     sum,
     max,
     transpose,
+    equal,
 )
 
-__all__ = ["Tensor", 'zeros', 'ones', 'empty', 'full', 'arange', 'linspace', 'eye', 'zeros_like', 'ones_like', 'full_like', 'exp', 'sum', 'max', 'transpose']
+__all__ = ["Tensor", 'zeros', 'ones', 'empty', 'full', 'arange', 'linspace', 'eye', 'zeros_like', 'ones_like', 'full_like', 'exp', 'sum', 'max', 'transpose', 'equal']
