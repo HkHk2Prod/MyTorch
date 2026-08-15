@@ -4,66 +4,101 @@
 from ._backend import xp
 from .tensor import Tensor, _as_tensor
 
-def zeros(*args, requires_grad=False, **kwargs):
-    args = tuple(a.data if isinstance(a, Tensor) else a for a in args)
-    fn = getattr(xp, name)
-    return Tensor(fn(*args, **kwargs), requires_grad=requires_grad)
-
-def ones(*args, requires_grad=False, **kwargs):
-    args = tuple(a.data if isinstance(a, Tensor) else a for a in args)
-    fn = getattr(xp, name)
-    return Tensor(fn(*args, **kwargs), requires_grad=requires_grad)
-
-def empty(*args, requires_grad=False, **kwargs):
-    args = tuple(a.data if isinstance(a, Tensor) else a for a in args)
-    fn = getattr(xp, name)
-    return Tensor(fn(*args, **kwargs), requires_grad=requires_grad)
-
-def full(*args, requires_grad=False, **kwargs):
-    args = tuple(a.data if isinstance(a, Tensor) else a for a in args)
-    fn = getattr(xp, name)
-    return Tensor(fn(*args, **kwargs), requires_grad=requires_grad)
 
 def arange(*args, requires_grad=False, **kwargs):
     args = tuple(a.data if isinstance(a, Tensor) else a for a in args)
-    fn = getattr(xp, name)
+    fn = xp.arange
     return Tensor(fn(*args, **kwargs), requires_grad=requires_grad)
 
-def linspace(*args, requires_grad=False, **kwargs):
+
+def empty(*args, requires_grad=False, **kwargs):
     args = tuple(a.data if isinstance(a, Tensor) else a for a in args)
-    fn = getattr(xp, name)
+    fn = xp.empty
     return Tensor(fn(*args, **kwargs), requires_grad=requires_grad)
+
 
 def eye(*args, requires_grad=False, **kwargs):
     args = tuple(a.data if isinstance(a, Tensor) else a for a in args)
-    fn = getattr(xp, name)
+    fn = xp.eye
     return Tensor(fn(*args, **kwargs), requires_grad=requires_grad)
 
-def zeros_like(*args, requires_grad=False, **kwargs):
+
+def full(*args, requires_grad=False, **kwargs):
     args = tuple(a.data if isinstance(a, Tensor) else a for a in args)
-    fn = getattr(xp, name)
+    fn = xp.full
     return Tensor(fn(*args, **kwargs), requires_grad=requires_grad)
 
-def ones_like(*args, requires_grad=False, **kwargs):
-    args = tuple(a.data if isinstance(a, Tensor) else a for a in args)
-    fn = getattr(xp, name)
-    return Tensor(fn(*args, **kwargs), requires_grad=requires_grad)
 
 def full_like(*args, requires_grad=False, **kwargs):
     args = tuple(a.data if isinstance(a, Tensor) else a for a in args)
-    fn = getattr(xp, name)
+    fn = xp.full_like
     return Tensor(fn(*args, **kwargs), requires_grad=requires_grad)
+
+
+def linspace(*args, requires_grad=False, **kwargs):
+    args = tuple(a.data if isinstance(a, Tensor) else a for a in args)
+    fn = xp.linspace
+    return Tensor(fn(*args, **kwargs), requires_grad=requires_grad)
+
+
+def ones(*args, requires_grad=False, **kwargs):
+    args = tuple(a.data if isinstance(a, Tensor) else a for a in args)
+    fn = xp.ones
+    return Tensor(fn(*args, **kwargs), requires_grad=requires_grad)
+
+
+def ones_like(*args, requires_grad=False, **kwargs):
+    args = tuple(a.data if isinstance(a, Tensor) else a for a in args)
+    fn = xp.ones_like
+    return Tensor(fn(*args, **kwargs), requires_grad=requires_grad)
+
+
+def zeros(*args, requires_grad=False, **kwargs):
+    args = tuple(a.data if isinstance(a, Tensor) else a for a in args)
+    fn = xp.zeros
+    return Tensor(fn(*args, **kwargs), requires_grad=requires_grad)
+
+
+def zeros_like(*args, requires_grad=False, **kwargs):
+    args = tuple(a.data if isinstance(a, Tensor) else a for a in args)
+    fn = xp.zeros_like
+    return Tensor(fn(*args, **kwargs), requires_grad=requires_grad)
+
+
+def equal(x, *args, **kwargs):
+    return _as_tensor(x).equal(*args, **kwargs)
+
 
 def exp(x, *args, **kwargs):
     return _as_tensor(x).exp(*args, **kwargs)
 
-def sum(x, *args, **kwargs):
-    return _as_tensor(x).sum(*args, **kwargs)
 
 def max(x, *args, **kwargs):
     return _as_tensor(x).max(*args, **kwargs)
 
+
+def sum(x, *args, **kwargs):
+    return _as_tensor(x).sum(*args, **kwargs)
+
+
 def transpose(x, *args, **kwargs):
     return _as_tensor(x).transpose(*args, **kwargs)
 
-__all__ = ['zeros', 'ones', 'empty', 'full', 'arange', 'linspace', 'eye', 'zeros_like', 'ones_like', 'full_like', 'exp', 'sum', 'max', 'transpose']
+
+__all__ = [
+    "arange",
+    "empty",
+    "equal",
+    "exp",
+    "eye",
+    "full",
+    "full_like",
+    "linspace",
+    "max",
+    "ones",
+    "ones_like",
+    "sum",
+    "transpose",
+    "zeros",
+    "zeros_like",
+]

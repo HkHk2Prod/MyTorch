@@ -1,3 +1,6 @@
+from mytorch.nn.parameter import Parameter
+
+
 class Module:
     def __init__(self):
         self._params = {}
@@ -9,9 +12,8 @@ class Module:
             yield from module.parameters()
 
     def __setattr__(self, name, value):
-        if isinstance(value, (Parameter, Module)):
-            if '_params' not in self.__dict__:
-                raise AttributeError(f"cannot assign '{name}' before Module.__init__() call")
+        if isinstance(value, (Parameter, Module)) and "_params" not in self.__dict__:
+            raise AttributeError(f"cannot assign '{name}' before Module.__init__() call")
         if isinstance(value, Parameter):
             self._params[name] = value
         elif isinstance(value, Module):
@@ -26,4 +28,4 @@ class Module:
         return self.forward(*args, **kwargs)
 
     def forward(self, *args, **kwargs):
-        raise NotImplementedError(f'{type(self).__name__} has not implemented forward()')
+        raise NotImplementedError(f"{type(self).__name__} has not implemented forward()")

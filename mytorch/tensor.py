@@ -9,22 +9,23 @@ def sum_to(tensor, shape):
             tensor = tensor.sum(axis=i, keepdims=True)
     return tensor
 
+
 def _T(tensor):
-    return tensor.swapaxes(-1,-2)
+    return tensor.swapaxes(-1, -2)
+
 
 def _as_tensor(x):
     return x if isinstance(x, Tensor) else Tensor(x)
 
 
-
 class Tensor:
-    __slots__ = {'data', 'grad', 'requires_grad', '_backward', '_children'}
-    __array_ufunc__ = None # This overrides numpy behavior for __add__ 
-                           # in a + b where a is numpy array
-                           # it will call __radd__ for Tensor
-                           # if b is a Tensor.
+    __slots__ = {"_backward", "_children", "data", "grad", "requires_grad"}
+    __array_ufunc__ = None  # This overrides numpy behavior for __add__
+    # in a + b where a is numpy array
+    # it will call __radd__ for Tensor
+    # if b is a Tensor.
 
-    def __init__(self, data, *, requires_grad=False, _children = ()):
+    def __init__(self, data, *, requires_grad=False, _children=()):
         self.data = xp.asarray(data, dtype=float)
         self.requires_grad = requires_grad
         self._backward = lambda g: None
@@ -39,13 +40,15 @@ class Tensor:
         out = Tensor(
             data=self.data + other.data,
             requires_grad=self.requires_grad or other.requires_grad,
-            _children = (self, other),
+            _children=(self, other),
         )
+
         def _backward(g):
             if self.requires_grad:
                 self._accumulate(sum_to(g, self.data.shape))
             if other.requires_grad:
                 other._accumulate(sum_to(g, other.data.shape))
+
         out._backward = _backward
         return out
 
@@ -54,23 +57,25 @@ class Tensor:
         out = Tensor(
             data=self.data * other.data,
             requires_grad=self.requires_grad or other.requires_grad,
-            _children = (self, other),
+            _children=(self, other),
         )
+
         def _backward(g):
             if self.requires_grad:
-                self._accumulate(sum_to(g  * other.data, self.data.shape))
+                self._accumulate(sum_to(g * other.data, self.data.shape))
             if other.requires_grad:
                 other._accumulate(sum_to(g * self.data, other.data.shape))
+
         out._backward = _backward
-        return out    
-    
+        return out
+
     def __pow__(self, n):
-        out = Tensor(self.data ** n,
-                     requires_grad=self.requires_grad,
-                     _children=(self,))
+        out = Tensor(self.data**n, requires_grad=self.requires_grad, _children=(self,))
+
         def _backward(g):
             if self.requires_grad:
                 self._accumulate(g * n * self.data ** (n - 1))
+
         out._backward = _backward
         return out
 
@@ -79,16 +84,15 @@ class Tensor:
         out = Tensor(
             data=self.data / other.data,
             requires_grad=self.requires_grad or other.requires_grad,
-            _children = (self, other),
+            _children=(self, other),
         )
+
         def _backward(g):
             if self.requires_grad:
-                self._accumulate(sum_to(g  / other.data, self.data.shape))
+                self._accumulate(sum_to(g / other.data, self.data.shape))
             if other.requires_grad:
-                other._accumulate(sum_to(
-                    g *(-self.data) / (other.data ** 2),
-                    other.data.shape)
-                    )
+                other._accumulate(sum_to(g * (-self.data) / (other.data**2), other.data.shape))
+
         out._backward = _backward
         return out
 
@@ -112,55 +116,69 @@ class Tensor:
     def __rtruediv__(self, other):
         return _as_tensor(other) / self
 
-
     def exp(self):
-        out = Tensor(xp.exp(self.data),
-                     requires_grad=self.requires_grad,
-                     _children=(self,))
+        out = Tensor(xp.exp(self.data), requires_grad=self.requires_grad, _children=(self,))
+
         def _backward(g):
             if self.requires_grad:
                 self._accumulate(out.data * g)
+
         out._backward = _backward
         return out
 
     def sum(self, axis=None, keepdims=False):
-        out = Tensor(self.data.sum(axis=axis, keepdims=keepdims),
-                     requires_grad=self.requires_grad,
-                     _children=(self,))
+        out = Tensor(
+            self.data.sum(axis=axis, keepdims=keepdims),
+            requires_grad=self.requires_grad,
+            _children=(self,),
+        )
+
         def _backward(g):
             if self.requires_grad:
                 if axis is not None and not keepdims:
                     g = xp.expand_dims(g, axis)
                 self._accumulate(xp.broadcast_to(g, self.data.shape).copy())
+
         out._backward = _backward
         return out
 
     def max(self, axis=None, keepdims=False):
         m = self.data.max(axis=axis, keepdims=True)
-        out = Tensor(m if keepdims else self.data.max(axis=axis),
-                     requires_grad=self.requires_grad,
-                     _children=(self,))
+        out = Tensor(
+            m if keepdims else self.data.max(axis=axis),
+            requires_grad=self.requires_grad,
+            _children=(self,),
+        )
+
         def _backward(g):
             if self.requires_grad:
-                mask = (self.data == m)
+                mask = self.data == m
                 count = mask.sum(axis=axis, keepdims=True)
                 if axis is not None and not keepdims:
                     g = xp.expand_dims(g, axis)
                 self._accumulate(mask * g / count)
+
         out._backward = _backward
         return out
 
     def __matmul__(self, other):
-        out = Tensor(self.data @ other.data,
-                     requires_grad=self.requires_grad or other.requires_grad,
-                     _children=(self, other))
+        out = Tensor(
+            self.data @ other.data,
+            requires_grad=self.requires_grad or other.requires_grad,
+            _children=(self, other),
+        )
+
         def _backward(g):
             if self.requires_grad:
                 self._accumulate(sum_to(g @ _T(other.data), self.data.shape))
             if other.requires_grad:
                 other._accumulate(sum_to(_T(self.data) @ g, other.data.shape))
+
         out._backward = _backward
         return out
+
+    def equal(self, other):
+        return bool(xp.array_equal(self.data, _as_tensor(other).data))
 
     def size(self, dim=None):
         return self.data.shape if dim is None else self.data.shape[dim]
@@ -170,12 +188,14 @@ class Tensor:
         return self.data.shape
 
     def transpose(self, dim0, dim1):
-        out = Tensor(self.data.swapaxes(dim0, dim1),
-                     requires_grad=self.requires_grad,
-                     _children=(self,))
+        out = Tensor(
+            self.data.swapaxes(dim0, dim1), requires_grad=self.requires_grad, _children=(self,)
+        )
+
         def _backward(g):
             if self.requires_grad:
                 self._accumulate(g.swapaxes(dim0, dim1))
+
         out._backward = _backward
         return out
 
@@ -186,12 +206,14 @@ class Tensor:
     def backward(self):
         topo = []
         visited = set()
+
         def build_topo(v):
             if v not in visited:
                 visited.add(v)
                 for c in v._children:
                     build_topo(c)
                 topo.append(v)
+
         self.grad = xp.ones_like(self.data)
         build_topo(self)
         for v in reversed(topo):
